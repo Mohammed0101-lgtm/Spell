@@ -62,7 +62,7 @@ int get(map *m, char *key) {
     entry *e = m->buckets[index]; 
 
     // iterate through the map till finding key and return it's value
-    while (e != NULL) {
+    while (e) {
         if (strcmp(key, e->key)) 
             return e->value;
 
@@ -78,7 +78,7 @@ void put(map *m, const char *key, int value) {
     entry *e = m->buckets[index]; // make an entry at the index
 
     // iterate to find a potential matching key
-    while (e != NULL) {
+    while (e) {
         if (strcmp(e->key, key) == 0) {
             // if key is found replace the value with new one
             e->value = value; 
@@ -128,8 +128,7 @@ void free_map(map *m) {
     free(m);
 }
 
-int sub_min(int a, int b) 
-{
+int sub_min(int a, int b) {
     return a < b ? a : b;
 }
 
@@ -222,7 +221,7 @@ int binary_search_file(FILE *file, const char *target) {
         buffer[strcspn(buffer, "\n")] = '\0';
         int cmp = strcmp(buffer, target);
 
-        if (cmp == 0) {
+        if (cmp) {
             fseek(file, 0, SEEK_SET);
             line_num = 0;
             while (ftell(file) < pos) {
@@ -269,6 +268,7 @@ int binary_search_insert(FILE *file, const char *target) {
         if (cmp == 0) {
             fseek(file, 0, SEEK_SET);
             line_number = 0;
+            
             while (ftell(file) < position) {
                 if (!fgets(buffer, MAX_WORD_LEN, file)) 
                     break;
@@ -326,8 +326,7 @@ void insert_sorted(candidate *arr, int *size, candidate word) {
 }
 
 // prioritize candidates that have input as the prefix
-int is_prefix(char *word, char *candidate) 
-{
+int is_prefix(char *word, char *candidate) {
     return strncmp(word, candidate, strlen(word)) == 0;
 }
 
