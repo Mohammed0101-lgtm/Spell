@@ -46,7 +46,7 @@ map *create_map(int capacity) {
         return NULL;
 
     m->capacity = capacity;
-    m->buckets = (entry**)calloc(capacity, sizeof(entry*)); // allocate memory for each bucket collectively
+    m->buckets  = (entry**)calloc(capacity, sizeof(entry*)); // allocate memory for each bucket collectively
     
     if (!m->buckets) {
         free(m);
@@ -59,7 +59,7 @@ map *create_map(int capacity) {
 // get a specific key's value
 int get(map *m, char *key) {
     int index = hash(key) % m->capacity; // get the index of the key
-    entry *e = m->buckets[index]; 
+    entry *e  = m->buckets[index]; 
 
     // iterate through the map till finding key and return it's value
     while (e) {
@@ -75,7 +75,7 @@ int get(map *m, char *key) {
 // add a new entry to the map 
 void put(map *m, const char *key, int value) {
     int index = hash(key) % m->capacity; // generate an index for the key
-    entry *e = m->buckets[index]; // make an entry at the index
+    entry *e  = m->buckets[index]; // make an entry at the index
 
     // iterate to find a potential matching key
     while (e) {
@@ -97,7 +97,7 @@ void put(map *m, const char *key, int value) {
 
     // intialize the new entry
     newEntry->value = value;
-    newEntry->key = strdup(key);
+    newEntry->key   = strdup(key);
     
     if (!newEntry->key) {
         free(newEntry);
@@ -105,7 +105,7 @@ void put(map *m, const char *key, int value) {
     }
 
     // insert the new entry at the calculated index
-    newEntry->next = m->buckets[index];
+    newEntry->next    = m->buckets[index];
     m->buckets[index] = newEntry;
 }
 
@@ -201,14 +201,17 @@ int edit_distance(char *s, char *t) {
 
 // find a string in the dictionnary using binary search
 int binary_search_file(FILE *file, const char *target) {
-    long low = 0;
     fseek(file, 0, SEEK_END);
-    long high = ftell(file);
+
+    long low      =  0;
+    int line_num  =  0;
+    long high     =  ftell(file);
+    
     char buffer[MAX_WORD_LEN]; 
-    int line_num = 0;
 
     while (low <= high) {
         long mid = low + (high - low) / 2;
+        
         fseek(file, mid, SEEK_SET);
 
         if (mid != 0) 
@@ -224,6 +227,7 @@ int binary_search_file(FILE *file, const char *target) {
         if (cmp) {
             fseek(file, 0, SEEK_SET);
             line_num = 0;
+        
             while (ftell(file) < pos) {
                 if (!fgets(buffer, MAX_WORD_LEN, file)) 
                     break;
@@ -238,6 +242,7 @@ int binary_search_file(FILE *file, const char *target) {
         else 
             low = ftell(file);
     }
+    
     return -1;
 }
 
@@ -245,11 +250,13 @@ int binary_search_file(FILE *file, const char *target) {
 // the position where it should be inserted just to get 
 // the words that are around that position as candidates
 int binary_search_insert(FILE *file, const char *target) {
-    long low = 0;
     fseek(file, 0, SEEK_END);
-    long high = ftell(file);
+    
+    long low         =  0;
+    int line_number  =  0;
+    long high        =  ftell(file);
+
     char buffer[MAX_WORD_LEN];
-    int line_number = 0;
 
     while (low <= high) {
         long mid = low + (high - low) / 2;
@@ -435,7 +442,7 @@ char **get_spelling_candidates(char *word, int *returnSize) {
     for (int i = 0; i < j; i++) {
         candidate can;
         can.word = candidates[i];
-        can.dis = get(m, can.word);
+        can.dis  = get(m, can.word);
         insert_sorted(cans, &size, can);
     }
 
