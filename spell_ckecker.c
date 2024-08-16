@@ -217,13 +217,15 @@ int binary_search_file(FILE *file, const char *target) {
         
         fseek(file, mid, SEEK_SET);
 
-        if (mid != 0) 
+        if (mid != 0) {
             fgets(buffer, MAX_WORD_LEN, file);
-        
+        }
+            
         long pos = ftell(file);
-        if (!fgets(buffer, MAX_WORD_LEN, file)) 
+        if (!fgets(buffer, MAX_WORD_LEN, file)) {
             break;
-
+        }
+        
         buffer[strcspn(buffer, "\n")] = '\0';
         int cmp = strcmp(buffer, target);
 
@@ -232,18 +234,20 @@ int binary_search_file(FILE *file, const char *target) {
             line_num = 0;
         
             while (ftell(file) < pos) {
-                if (!fgets(buffer, MAX_WORD_LEN, file)) 
+                if (fgets(buffer, MAX_WORD_LEN, file) == NULL) {
                     break;
+                }
                 
                 line_num++;
             }
             
             return line_num + 1;
         } 
-        else if (cmp > 0) 
+        else if (cmp > 0) {
             high = mid - 1;
-        else 
+        } else {
             low = ftell(file);
+        }
     }
     
     return -1;
@@ -265,12 +269,14 @@ int binary_search_insert(FILE *file, const char *target) {
         long mid = low + (high - low) / 2;
         fseek(file, mid, SEEK_SET);
 
-        if (mid != 0) 
+        if (mid != 0) { 
             fgets(buffer, MAX_WORD_LEN, file);
-
+        }
+        
         long position = ftell(file);
-        if (!fgets(buffer, MAX_WORD_LEN, file)) 
+        if (!fgets(buffer, MAX_WORD_LEN, file)) { 
             break;
+        }
 
         buffer[strcspn(buffer, "\n")] = '\0';
         int cmp = strcmp(buffer, target);
@@ -280,26 +286,29 @@ int binary_search_insert(FILE *file, const char *target) {
             line_number = 0;
             
             while (ftell(file) < position) {
-                if (!fgets(buffer, MAX_WORD_LEN, file)) 
+                if (!fgets(buffer, MAX_WORD_LEN, file)) { 
                     break;
+                }
                 
                 line_number++;
             }
             
             return line_number + 1;
         } 
-        else if (cmp > 0) 
+        else if (cmp > 0) { 
             high = mid - 1;
-        else 
+        } else {
             low = ftell(file);
+        }
     }
 
     fseek(file, 0, SEEK_SET);
     line_number = 0;
     
     while (fgets(buffer, MAX_WORD_LEN, file) != NULL) {
-        if (strcmp(buffer, target) > 0) 
+        if (strcmp(buffer, target) > 0) {
             return line_number + 1;
+        }
         
         line_number++;
     }
@@ -313,23 +322,26 @@ char *get_word_by_line_number(FILE *file, int line_number) {
 
     fseek(file, 0, SEEK_SET);
     
-    while (fgets(buffer, MAX_WORD_LEN, file))
+    while (fgets(buffer, MAX_WORD_LEN, file) != NULL) {
         if (++current_line == line_number) {
             buffer[strcspn(buffer, "\n")] = '\0';
             return buffer;
         }
-    
+    }
+
     return NULL;
 }
 
 // sorting the candidates array
 void insert_sorted(candidate *arr, int *size, candidate word) {
     int pos = 0;
-    while (pos < *size && word.dis >= arr[pos].dis) 
+    while (pos < *size && word.dis >= arr[pos].dis) {
         pos++;
+    }
 
-    for (int i = *size; i > pos; i--) 
+    for (int i = *size; i > pos; i--) { 
         arr[i] = arr[i - 1];
+    }
 
     arr[pos] = word;
     (*size)++;
@@ -344,8 +356,9 @@ int is_prefix(char *word, char *candidate) {
 bool isCorrectSpell(char *word) {
     FILE *fp = fopen(dict, "r");
    
-    if (!fp) 
+    if (fp == NULL) { 
         return false;
+    }
     
     int index = binary_search_file(fp, word);
     fclose(fp);
@@ -357,30 +370,30 @@ bool isCorrectSpell(char *word) {
 char **get_spelling_candidates(char *word, int *returnSize) {
     char **candidates = (char **)malloc(MAX_CANDID * sizeof(char *));
     
-    if (!candidates) {
+    if (candidates == NULL) {
         fprintf(stderr, 
-                    "Memory allocation failed : get_spelling_candidates()\n");
+                "Memory allocation failed : get_spelling_candidates()\n");
        
         return NULL;
     }
 
-    map *m = create_map(MAX_CANDID);
-    if (!m) {
-        free(candidates);
+    struct map *m = create_map(MAX_CANDID);
+    if (m == NULL) {
         fprintf(stderr, 
-                    "Memory allocation failed : get_spelling_candidates()\n");
+                "Memory allocation failed : get_spelling_candidates()\n");
         
+        free(candidates);
         return NULL;
     }
 
     FILE *fp = fopen(dict, "r");
     
-    if (!fp) {
-        free_map(m);
-        free(candidates);
+    if (fp == NULL) {
         fprintf(stderr, 
             "File opening failed : get_spelling_candidates()\n");
-        
+
+        free_map(m);
+        free(candidates);
         return NULL;
     }
 
@@ -392,58 +405,64 @@ char **get_spelling_candidates(char *word, int *returnSize) {
 
         char *candid = get_word_by_line_number(fp, i);
 
-        if (!candid) 
+        if (candid == NULL) { 
             continue;
+        }
         
-        if (candid[0] != word[0]) 
+        if (candid[0] != word[0]) {
             continue;
+        }
 
         int dis = edit_distance(word, candid);
 
-        if (!is_prefix(word, candid)) 
+        if (!is_prefix(word, candid)) {
             dis += 10;
+        }
 
         if (dis == -1) {
             dis = edit_distance(word, candid);
             
             if (dis == -1) {
+                for (int z = 0; z < j; z++) {
+                    free(candidates[z]);
+                }
+
                 fclose(fp);
                 free_map(m);
                 free(candid);
-                for (int z = 0; z < j; z++) 
-                    free(candidates[z]);
-                
                 return NULL;
             }
-        }
+        }    
 
         candidates[j] = strdup(candid);
         
-        if (!candidates[j]) 
+        if (candidates[j] == NULL) { 
             continue;
+        }
 
         put(m, candidates[j], dis);
 
         j++;
     }
 
-    candidate *cans = (candidate *)malloc(MAX_CANDID * sizeof(candidate));
-    if (!cans) {
+    struct candidate *cans = (struct candidate *)malloc(MAX_CANDID * sizeof(struct candidate));
+    if (cans == NULL) {
+        fprintf(stderr, 
+               "Memory allocation failed : get_spelling_candidates()\n");
+        
         free_map(m);
-        for (int i = 0; i < j; i++) 
+        for (int i = 0; i < j; i++) {
             free(candidates[i]);
+        }
         
         free(candidates);
         fclose(fp);
-        fprintf(stderr, 
-                    "Memory allocation failed : get_spelling_candidates()\n");
-       
         return NULL;
     }
 
     int size = 0;
     for (int i = 0; i < j; i++) {
-        candidate can;
+        struct candidate can;
         can.word = candidates[i];
         can.dis  = get(m, can.word);
         insert_sorted(cans, &size, can);
@@ -454,9 +473,10 @@ char **get_spelling_candidates(char *word, int *returnSize) {
         (*returnSize)++;
     }
 
-    for (int i = size; i < MAX_CANDID; i++) 
+    for (int i = size; i < MAX_CANDID; i++) {
         candidates[i] = NULL;
-    
+    }
+
     free_map(m);
     free(cans);
     fclose(fp);
@@ -467,12 +487,14 @@ char **get_spelling_candidates(char *word, int *returnSize) {
 
 // spelling checker
 void spell_check(char *word) {
-    if (!isCorrectSpell(word)) {
+    if (isCorrectSpell(word) == false) {
         int size = 0;
         char **candidates = get_spelling_candidates(word, &size);
     
-        if (!candidates) {
-            fprintf(stderr, "Failed to get spelling candidates!\n");
+        if (candidates == NULL) {
+            fprintf(stderr, 
+                    "Failed to get spelling candidates!\n");
+            
             return;
         }
 
@@ -482,27 +504,26 @@ void spell_check(char *word) {
         }
     
         free(candidates);
-    } 
-    else 
+    } else {
         printf("word spelling is correct!\n");
-    
+    }
 }
 
 int main(void) {
     char *s = (char *)malloc(NAME_MAX * sizeof(char));
-   
-    if (!s) {
+    if (s == NULL) {
         fprintf(stderr, 
                     "Memory allocation error!\n");
+        
         return -1;
     }
 
     printf("Enter word : ");
-    if (!fgets(s, NAME_MAX, stdin)) {
-        free(s);
+    if (fgets(s, NAME_MAX, stdin) == NULL) {
         fprintf(stderr, 
                     "Failed to read input!\n");
-    
+        
+        free(s);
         return -1;
     }
 
