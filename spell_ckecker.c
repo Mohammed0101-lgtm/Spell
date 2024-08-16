@@ -10,23 +10,23 @@
 const char *dict = "dict.txt"; // replace this with the path to your dictionnary
 
 // spelling candidate 
-typedef struct {
+struct candidate { 
     char *word;
     int dis;
-} candidate;
+};
 
 // entry of the associative array (aka hash map)
-typedef struct entry {
+struct entry {
     char *key;
     int value;
 
     struct entry *next;
-} entry;
+};
 
-typedef struct map {
-    entry **buckets; // buckets to store entries
+struct map {
+    struct entry **buckets; // buckets to store entries
     int capacity; // custom
-} map;
+};
 
 // hashing function for the indexing
 unsigned long long hash(const char *str) {
@@ -39,16 +39,17 @@ unsigned long long hash(const char *str) {
     return h;
 }
 
-map *create_map(int capacity) {
-    map *m = (map *)malloc(sizeof(map));
+struct map *create_map(int capacity) {
+    struct map *m = (struct map *)malloc(sizeof(struct map));
     
-    if (!m) 
+    if (m == NULL) { 
         return NULL;
+    }
 
     m->capacity = capacity;
-    m->buckets  = (entry**)calloc(capacity, sizeof(entry*)); // allocate memory for each bucket collectively
+    m->buckets  = (struct entry**)calloc(capacity, sizeof(struct entry*)); // allocate memory for each bucket collectively
     
-    if (!m->buckets) {
+    if (m->buckets == NULL) {
         free(m);
         return NULL;
     }
@@ -57,28 +58,30 @@ map *create_map(int capacity) {
 }
 
 // get a specific key's value
-int get(map *m, char *key) {
+int get(struct map *m, char *key) {
     int index = hash(key) % m->capacity; // get the index of the key
-    entry *e  = m->buckets[index]; 
+    struct entry *e  = m->buckets[index]; 
 
     // iterate through the map till finding key and return it's value
-    while (e) {
-        if (strcmp(key, e->key)) 
+    while (e != NULL) {
+        if (strcmp(key, e->key)) {
             return e->value;
+        }
 
         e = e->next;
     }
+
     // if no such key is found
     return 0;
 }
 
 // add a new entry to the map 
-void put(map *m, const char *key, int value) {
+void put(struct map *m, const char *key, int value) {
     int index = hash(key) % m->capacity; // generate an index for the key
-    entry *e  = m->buckets[index]; // make an entry at the index
+    struct entry *e  = m->buckets[index]; // make an entry at the index
 
     // iterate to find a potential matching key
-    while (e) {
+    while (e != NULL) {
         if (strcmp(e->key, key) == 0) {
             // if key is found replace the value with new one
             e->value = value; 
@@ -90,16 +93,17 @@ void put(map *m, const char *key, int value) {
 
     // if no existing entry with the given key 
     // is found then we should make a new entry
-    entry *newEntry = (entry *)malloc(sizeof(entry));
+    struct entry *newEntry = (struct entry *)malloc(sizeof(struct entry));
    
-    if (!newEntry) 
+    if (newEntry == NULL) {
         return;
+    } 
 
     // intialize the new entry
     newEntry->value = value;
     newEntry->key   = strdup(key);
     
-    if (!newEntry->key) {
+    if (newEntry->key == NULL) {
         free(newEntry);
         return;
     }
