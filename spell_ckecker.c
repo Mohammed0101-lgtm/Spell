@@ -114,12 +114,12 @@ void put(struct map *m, const char *key, int value) {
 }
 
 // free the map so you don't shoot yourself in the foot
-void free_map(map *m) {
+void free_map(struct map *m) {
     for (int i = 0; i < m->capacity; i++) {
-        entry *e = m->buckets[i];
+        struct entry *e = m->buckets[i];
     
-        while (e) {
-            entry *next = e->next;
+        while (e != NULL) {
+            struct entry *next = e->next;
             
             free(e->key);
             free(e);
@@ -158,31 +158,29 @@ int edit_distance(char *s, char *t) {
     // using a table of distances to keep track of the edit distance
     int **dp = (int **)malloc((m + 1) * sizeof(int *));
     
-    if (!dp) 
+    if (dp == NULL) { 
         return -1;
+    }
 
     // allocating memory for each row to be 'n' length
     for (int i = 0; i <= m; i++) {
         dp[i] = (int *)malloc((n + 1)*sizeof(int));
         
-        if (!dp[i]) {
+        if (dp[i] == NULL) {
             // free the previously allocated 
             // rows before failing
-            for (int j = 0; j < i; j++)  
+            for (int j = 0; j < i; j++) {  
                 free(dp[j]); 
-            
+            }
+
             free(dp);
-        
             return -1;
         }
     }
 
     // initialize rows
-    for (int i = 0; i <= m; i++) 
-        dp[i][0] = i;
-
-    for (int j = 0; j <= n; j++) 
-        dp[0][j] = j;
+    for (int i = 0; i <= m; i++) { dp[i][0] = i; }
+    for (int j = 0; j <= n; j++) { dp[0][j] = j; }
     
     for (int i = 1; i <= m; i++) {
         for (int j = 1; j <= n; j++) {
@@ -195,9 +193,10 @@ int edit_distance(char *s, char *t) {
     int result = dp[m][n];
 
     // free the memory 
-    for (int i = 0; i <= m; i++) 
+    for (int i = 0; i <= m; i++) { 
         free(dp[i]);
-    
+    }
+
     free(dp);
 
     return result;
