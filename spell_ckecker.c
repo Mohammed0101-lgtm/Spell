@@ -333,7 +333,7 @@ char *get_word_by_line_number(FILE *file, int line_number) {
 }
 
 // sorting the candidates array
-void insert_sorted(candidate *arr, int *size, candidate word) {
+void insert_sorted(struct candidate *arr, int *size, struct candidate word) {
     int pos = 0;
     while (pos < *size && word.dis >= arr[pos].dis) {
         pos++;
@@ -355,7 +355,6 @@ int is_prefix(char *word, char *candidate) {
 // check if the word is in the dictionnary
 bool isCorrectSpell(char *word) {
     FILE *fp = fopen(dict, "r");
-   
     if (fp == NULL) { 
         return false;
     }
